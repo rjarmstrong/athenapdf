@@ -1,19 +1,20 @@
 package main
 
 import (
-	"errors"
-	"github.com/arachnys/athenapdf/weaver/converter"
-	"github.com/arachnys/athenapdf/weaver/converter/athenapdf"
-	"github.com/arachnys/athenapdf/weaver/converter/cloudconvert"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/getsentry/raven-go"
-	"github.com/gin-gonic/gin"
-	"gopkg.in/alexcesaro/statsd.v2"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/getsentry/raven-go"
+	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	"github.com/rjarmstrong/athenapdf/weaver/converter"
+	"github.com/rjarmstrong/athenapdf/weaver/converter/athenapdf"
+	"github.com/rjarmstrong/athenapdf/weaver/converter/cloudconvert"
+	"gopkg.in/alexcesaro/statsd.v2"
 )
 
 var (
@@ -44,11 +45,13 @@ func statsHandler(c *gin.Context) {
 func conversionHandler(c *gin.Context, source converter.ConversionSource) {
 	// GC if converting temporary file
 	if source.IsLocal {
-		defer os.Remove(source.URI)
+		defer func() {
+			err := os.Remove(source.URI)
+			if err != nil {
+				log.Printf("%+v", errors.WithStack(err))
+			}
+		}()
 	}
-
-	_, aggressive := c.GetQuery("aggressive")
-	_, waitForStatus := c.GetQuery("waitForStatus")
 
 	conf := c.MustGet("config").(Config)
 	wq := c.MustGet("queue").(chan<- converter.Work)
@@ -58,12 +61,12 @@ func conversionHandler(c *gin.Context, source converter.ConversionSource) {
 	t := s.NewTiming()
 
 	awsConf := converter.AWSS3{
-		c.Query("aws_region"),
-		c.Query("aws_id"),
-		c.Query("aws_secret"),
-		c.Query("s3_bucket"),
-		c.Query("s3_key"),
-		c.Query("s3_acl"),
+		Region:       c.Query("aws_region"),
+		AccessKey:    c.Query("aws_id"),
+		AccessSecret: c.Query("aws_secret"),
+		S3Bucket:     c.Query("s3_bucket"),
+		S3Key:        c.Query("s3_key"),
+		S3Acl:        c.Query("s3_acl"),
 	}
 
 	var conversion converter.Converter
@@ -71,17 +74,36 @@ func conversionHandler(c *gin.Context, source converter.ConversionSource) {
 	attempts := 0
 
 	baseConversion := converter.Conversion{}
-	uploadConversion := converter.UploadConversion{baseConversion, awsConf}
+	uploadConversion := converter.UploadConversion{Conversion: baseConversion, AWSS3: awsConf}
+
+	_, aggressive := c.GetQuery("aggressive")
+	_, waitForStatus := c.GetQuery("waitForStatus")
+
+	athena := athenapdf.AthenaPDF{
+		UploadConversion: uploadConversion,
+		CMD:              conf.AthenaCMD,
+		Aggressive:       aggressive,
+		WaitForStatus:    waitForStatus,
+	}
+
+	cookieUrl := c.GetString("cookieUrl")
+	if cookieUrl != "" {
+		athena.Cookie = &athenapdf.Cookie{
+			Url:   cookieUrl,
+			Name:  c.GetString("cookieName"),
+			Value: c.GetString("cookieValue"),
+		}
+	}
 
 StartConversion:
-	conversion = athenapdf.AthenaPDF{uploadConversion, conf.AthenaCMD, aggressive, waitForStatus}
+	conversion = athena
 	if attempts != 0 {
 		cc := cloudconvert.Client{
-			conf.CloudConvert.APIUrl,
-			conf.CloudConvert.APIKey,
-			time.Second * time.Duration(conf.WorkerTimeout+5),
+			BaseURL: conf.CloudConvert.APIUrl,
+			APIKey:  conf.CloudConvert.APIKey,
+			Timeout: time.Second * time.Duration(conf.WorkerTimeout+5),
 		}
-		conversion = cloudconvert.CloudConvert{uploadConversion, cc}
+		conversion = cloudconvert.CloudConvert{UploadConversion: uploadConversion, Client: cc}
 	}
 	work = converter.NewWork(wq, conversion, source)
 

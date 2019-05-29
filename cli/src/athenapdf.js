@@ -50,6 +50,9 @@ athena
     .option("--ignore-certificate-errors", "ignores certificate errors")
     .option("--ignore-gpu-blacklist", "Enables GPU in Docker environment")
     .option("--wait-for-status", "Wait until window.status === WINDOW_STATUS (default: wait for page to load)")
+    .option("--cookie-name <cookieName>", "sets cookie name")
+    .option("--cookie-value <cookieValue>", "sets cookie value")
+    .option("--cookie-url <cookieUrl>", "sets cookie url")
     .arguments("<URI> [output]")
     .action((uri, output) => {
         uriArg = uri;
@@ -187,6 +190,13 @@ app.on("ready", () => {
     bw.loadURL(uriArg, loadOpts);
 
     ses = bw.webContents.session;
+
+    if(athena.cookieName && athena.cookieValue && athena.cookieUrl) {
+        ses.cookies.set({url: athena.cookieUrl, name: athena.cookieName, value: athena.cookieValue}, function (error) {
+            if (error) throw error;
+        });
+    }
+
     if (athena.bypass) {
         const _cookieWhitelist = ["nytimes", "ft.com"];
         const _inCookieWhitelist = (url) => {

@@ -1,26 +1,24 @@
 package athenapdf
 
 import (
-	"github.com/arachnys/athenapdf/weaver/converter"
-	"github.com/arachnys/athenapdf/weaver/testutil"
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/rjarmstrong/athenapdf/weaver/converter"
+	"github.com/rjarmstrong/athenapdf/weaver/testutil"
 )
 
 func TestConstructCMD(t *testing.T) {
-	got := constructCMD("athenapdf -S -T 120", "test_file.html", false, false)
-	want := []string{"athenapdf", "-S", "-T", "120", "test_file.html"}
+	got := constructCMD("athenapdf -S -T 120", "test_file.html", true, false, &Cookie{
+		Url:   "http://cookie-url",
+		Name:  "my-cookie",
+		Value: "my-cookie-val",
+	})
+	want := []string{"athenapdf", "-S", "-T", "120", "-A", "--cookieName", "my-cookie", "--cookieValue", "my-cookie-val", "--cookieUrl", "http://cookie-url", "test_file.html"}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("expected constructed athenapdf command to be %+v, got %+v", want, got)
-	}
-}
-
-func TestConstructCMD_aggressive(t *testing.T) {
-	cmd := constructCMD("athenapdf -S -T 60", "test_file.html", true, false)
-	if got, want := cmd[len(cmd)-1], "-A"; got != want {
-		t.Errorf("expected last argument of constructed athenapdf command to be %s, got %+v", want, got)
 	}
 }
 

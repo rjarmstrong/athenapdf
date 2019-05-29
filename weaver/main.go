@@ -2,12 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/DeanThompson/ginpprof"
-	"github.com/arachnys/athenapdf/weaver/converter"
-	"github.com/getsentry/raven-go"
-	"github.com/gin-gonic/contrib/sentry"
-	"github.com/gin-gonic/gin"
-	"gopkg.in/alexcesaro/statsd.v2"
 	"log"
 	"net/http"
 	"os"
@@ -15,6 +9,13 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/DeanThompson/ginpprof"
+	"github.com/getsentry/raven-go"
+	"github.com/gin-gonic/contrib/sentry"
+	"github.com/gin-gonic/gin"
+	"github.com/rjarmstrong/athenapdf/weaver/converter"
+	"gopkg.in/alexcesaro/statsd.v2"
 )
 
 // InitMiddleware sets up the necessary middlewares for the microservice.

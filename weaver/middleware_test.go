@@ -2,10 +2,6 @@ package main
 
 import (
 	"errors"
-	"github.com/arachnys/athenapdf/weaver/converter"
-	"github.com/getsentry/raven-go"
-	"github.com/gin-gonic/gin"
-	"gopkg.in/alexcesaro/statsd.v2"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +9,11 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/getsentry/raven-go"
+	"github.com/gin-gonic/gin"
+	"github.com/rjarmstrong/athenapdf/weaver/converter"
+	"gopkg.in/alexcesaro/statsd.v2"
 )
 
 func TestConfigMiddleware(t *testing.T) {

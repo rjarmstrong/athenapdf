@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"testing"
+
+	"github.com/gin-gonic/gin"
 )
 
-func TestMain(t *testing.T) {
+func TestMain(m *testing.M) {
 	gin.SetMode("test")
 }

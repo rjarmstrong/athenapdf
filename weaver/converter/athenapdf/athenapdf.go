@@ -1,10 +1,11 @@
 package athenapdf
 
 import (
-	"github.com/arachnys/athenapdf/weaver/converter"
-	"github.com/arachnys/athenapdf/weaver/gcmd"
 	"log"
 	"strings"
+
+	"github.com/rjarmstrong/athenapdf/weaver/converter"
+	"github.com/rjarmstrong/athenapdf/weaver/gcmd"
 )
 
 // AthenaPDF represents a conversion job for athenapdf CLI.
@@ -24,6 +25,14 @@ type AthenaPDF struct {
 	Aggressive bool
 	// WaitForStatus will wait until window.status === WINDOW_STATUS
 	WaitForStatus bool
+	// Cookie sets a cookie in the Electron Browser window to impersonate the calling user
+	Cookie *Cookie
+}
+
+type Cookie struct {
+	Url   string
+	Name  string
+	Value string
 }
 
 // constructCMD returns a string array containing the AthenaPDF command to be
@@ -31,15 +40,18 @@ type AthenaPDF struct {
 // string.
 // It will set an additional '-A' flag if aggressive is set to true.
 // See athenapdf CLI for more information regarding the aggressive mode.
-func constructCMD(base string, path string, aggressive bool, waitForStatus bool) []string {
+func constructCMD(base string, path string, aggressive bool, waitForStatus bool, cookie *Cookie) []string {
 	args := strings.Fields(base)
-	args = append(args, path)
 	if aggressive {
 		args = append(args, "-A")
 	}
 	if waitForStatus {
 		args = append(args, "--wait-for-status")
 	}
+	if cookie != nil {
+		args = append(args, "--cookieName", cookie.Name, "--cookieValue", cookie.Value, "--cookieUrl", cookie.Url)
+	}
+	args = append(args, path)
 	return args
 }
 
@@ -50,7 +62,7 @@ func (c AthenaPDF) Convert(s converter.ConversionSource, done <-chan struct{}) (
 	log.Printf("[AthenaPDF] converting to PDF: %s\n", s.GetActualURI())
 
 	// Construct the command to execute
-	cmd := constructCMD(c.CMD, s.URI, c.Aggressive, c.WaitForStatus)
+	cmd := constructCMD(c.CMD, s.URI, c.Aggressive, c.WaitForStatus, c.Cookie)
 
 	log.Printf("[AthenaPDF] executing: %s\n", cmd)
 

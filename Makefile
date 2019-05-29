@@ -4,7 +4,7 @@ CLI_DOCKER_ARTIFACT_DIR ?= "/athenapdf/build/"
 
 SERVICE_DIR ?= weaver
 SERVICE_IMAGE ?= "arachnysdocker/athenapdf-service"
-SERVICE_DOCKER_ARTIFACT_FILE ?= "/go/src/github.com/arachnys/athenapdf/weaver"
+SERVICE_DOCKER_ARTIFACT_FILE ?= "/go/src/github.com/rjarmstrong/athenapdf/weaver"
 
 P="\\033[34m[+]\\033[0m"
 

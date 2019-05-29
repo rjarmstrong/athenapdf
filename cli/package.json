@@ -13,7 +13,7 @@
   ],
   "homepage": "https://www.athenapdf.com/",
   "bugs": {
-    "url": "https://github.com/arachnys/athenapdf/issues"
+    "url": "https://github.com/rjarmstrong/athenapdf/issues"
   },
   "license": "MIT",
   "author": "Ian Lai <ian@arachnys.com>",
@@ -21,7 +21,7 @@
   "bin": "./bin/athenapdf",
   "repository": {
     "type": "git",
-    "url": "git://github.com/arachnys/athenapdf.git"
+    "url": "git://github.com/rjarmstrong/athenapdf.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
