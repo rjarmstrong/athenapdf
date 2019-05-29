@@ -46,9 +46,6 @@ type Config struct {
 	// It will be used to protect all conversion routes.
 	// Defaults to 'arachnys-weaver'.
 	AuthKey string
-	// See AthenaPDF CMD.
-	// Defaults to 'athenapdf -S'.
-	AthenaCMD string
 	// The maximum number of workers / concurrent conversions that can be
 	// running at any one time.
 	// Defaults to 10.
@@ -69,6 +66,8 @@ type Config struct {
 	SentryDSN string
 }
 
+const AthenaBaseCommand = "athenapdf -S"
+
 // NewEnvConfig initialises configuration variables from the environment.
 func NewEnvConfig() Config {
 	// Set defaults
@@ -77,7 +76,6 @@ func NewEnvConfig() Config {
 		CloudConvert:       cloudconvert,
 		HTTPAddr:           ":8080",
 		AuthKey:            "arachnys-weaver",
-		AthenaCMD:          "athenapdf -S",
 		MaxWorkers:         10,
 		MaxConversionQueue: 50,
 		WorkerTimeout:      90,
@@ -102,10 +100,6 @@ func NewEnvConfig() Config {
 
 	if authKey := os.Getenv("WEAVER_AUTH_KEY"); authKey != "" {
 		conf.AuthKey = authKey
-	}
-
-	if athenaCMD := os.Getenv("WEAVER_ATHENA_CMD"); athenaCMD != "" {
-		conf.AthenaCMD = athenaCMD
 	}
 
 	// NOTE: we aren't handle the _unlikely_ event of errors properly (they are being suppressed)

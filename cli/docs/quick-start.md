@@ -10,7 +10,7 @@ Before starting, ensure your Docker environment is [set up][docker], and ready-t
 It can be installed using:
 
 ```bash
-docker pull arachnysdocker/athenapdf
+docker pull rjarmstrong/athenapdf
 ```
 
 You can run the same command above to get updates.
@@ -21,7 +21,7 @@ You can run the same command above to get updates.
 ### Syntax
 
 ```bash
-docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf <input_path> [output_path]
+docker run --rm -v $(pwd):/converted/ rjarmstrong/athenapdf athenapdf <input_path> [output_path]
 ```
 
 The `<input_path>` can either be a local HTML file or a URL to a web page.
@@ -35,13 +35,13 @@ Due to a recent change in [Docker v1.10.0][1.10.0], you will have to add `--secu
 For Windows users, binding a volume with the preceding command may cause an error when using Git Bash / MinGW. In that case, adding an additional forward slash before the volume will remove the error:
 
 ```bash
-docker run --rm -v /$(pwd):/converted/ arachnysdocker/athenapdf athenapdf <input_path> [output_path]
+docker run --rm -v /$(pwd):/converted/ rjarmstrong/athenapdf athenapdf <input_path> [output_path]
 ```
 
 Alternatively, if using the Windows command prompt, `$(pwd)` must be replaced by `%cd%`:
 
 ```cmd
-docker run --rm -v %cd%:/converted/ arachnysdocker/athenapdf athenapdf <input_path> [output_path]
+docker run --rm -v %cd%:/converted/ rjarmstrong/athenapdf athenapdf <input_path> [output_path]
 ```
 
 ### Examples
@@ -49,13 +49,13 @@ docker run --rm -v %cd%:/converted/ arachnysdocker/athenapdf athenapdf <input_pa
 #### Local file
 
 ```bash
-docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf local_file.html
+docker run --rm -v $(pwd):/converted/ rjarmstrong/athenapdf athenapdf local_file.html
 ```
 
 #### Remote URL
 
 ```bash
-docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf http://blog.arachnys.com/
+docker run --rm -v $(pwd):/converted/ rjarmstrong/athenapdf athenapdf http://blog.arachnys.com/
 ```
 
 #### Arguments / flags
@@ -63,13 +63,13 @@ docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf http://
 To see a list of available CLI options:
 
 ```bash
-docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf --help
+docker run --rm -v $(pwd):/converted/ rjarmstrong/athenapdf athenapdf --help
 ```
 
 For example, you can write the output of the conversion to [standard output][stdout] using the `-S` flag, e.g.
 
 ```bash
-docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf -S http://blog.arachnys.com/
+docker run --rm -v $(pwd):/converted/ rjarmstrong/athenapdf athenapdf -S http://blog.arachnys.com/
 ```
 
 There is also a [flag][aggressive] for rendering a HTML document to a screen reader / mobile-friendly PDF. It is perfect for news articles, and blog posts. See [aggressive.md][aggressive].

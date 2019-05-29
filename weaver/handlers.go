@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -42,7 +43,75 @@ func statsHandler(c *gin.Context) {
 	})
 }
 
-func conversionHandler(c *gin.Context, source converter.ConversionSource) {
+func CreateAthenaConversion(c *gin.Context, uc converter.UploadConversion) *athenapdf.AthenaPDF {
+
+	_, aggressive := c.GetQuery("aggressive")
+	_, waitForStatus := c.GetQuery("waitForStatus")
+
+	delay := 10000
+	athena := &athenapdf.AthenaPDF{
+		UploadConversion: uc,
+		CMD:              AthenaBaseCommand,
+		AthenaArgs: athenapdf.Args{
+			Delay:         &delay,
+			Aggressive:    aggressive,
+			WaitForStatus: waitForStatus,
+		},
+	}
+
+	cookieUrl := c.Request.URL.Query().Get("cookieUrl")
+	if cookieUrl != "" {
+		athena.AthenaArgs.Cookie = &athenapdf.Cookie{
+			Url:   cookieUrl,
+			Name:  c.Request.URL.Query().Get("cookieName"),
+			Value: c.Request.URL.Query().Get("cookieValue"),
+		}
+	}
+
+	return athena
+}
+
+func CreateAthenaConversionFromCookie(c *gin.Context, uc converter.UploadConversion) (*athenapdf.AthenaPDF, error) {
+
+	_, aggressive := c.GetQuery("aggressive")
+	_, waitForStatus := c.GetQuery("waitForStatus")
+
+	var delay = 5
+	delayStr := c.Request.URL.Query().Get("delay")
+	if delayStr != "" {
+		d, err2 := strconv.ParseInt(delayStr, 10, 32)
+		if err2 != nil {
+			return nil, err2
+		}
+		delay = int(d)
+	}
+
+	athena := &athenapdf.AthenaPDF{
+		UploadConversion: uc,
+		CMD:              AthenaBaseCommand,
+		AthenaArgs: athenapdf.Args{
+			Delay:         &delay,
+			Aggressive:    aggressive,
+			WaitForStatus: waitForStatus,
+		},
+	}
+
+	cook, err := c.Request.Cookie("x-synergia-auth")
+	if err != nil {
+		log.Printf("%+v", err)
+		return nil, ErrAuthorization
+	}
+
+	athena.AthenaArgs.Cookie = &athenapdf.Cookie{
+		Url:   cook.Domain,
+		Name:  cook.Name,
+		Value: cook.Value,
+	}
+
+	return athena, nil
+}
+
+func conversionHandler(c *gin.Context, source converter.ConversionSource, ath converter.Converter, up converter.UploadConversion) {
 	// GC if converting temporary file
 	if source.IsLocal {
 		defer func() {
@@ -58,52 +127,20 @@ func conversionHandler(c *gin.Context, source converter.ConversionSource) {
 	s := c.MustGet("statsd").(*statsd.Client)
 	r, ravenOk := c.Get("sentry")
 
-	t := s.NewTiming()
-
-	awsConf := converter.AWSS3{
-		Region:       c.Query("aws_region"),
-		AccessKey:    c.Query("aws_id"),
-		AccessSecret: c.Query("aws_secret"),
-		S3Bucket:     c.Query("s3_bucket"),
-		S3Key:        c.Query("s3_key"),
-		S3Acl:        c.Query("s3_acl"),
-	}
-
 	var conversion converter.Converter
+	t := s.NewTiming()
 	var work converter.Work
 	attempts := 0
 
-	baseConversion := converter.Conversion{}
-	uploadConversion := converter.UploadConversion{Conversion: baseConversion, AWSS3: awsConf}
-
-	_, aggressive := c.GetQuery("aggressive")
-	_, waitForStatus := c.GetQuery("waitForStatus")
-
-	athena := athenapdf.AthenaPDF{
-		UploadConversion: uploadConversion,
-		CMD:              conf.AthenaCMD,
-		Aggressive:       aggressive,
-		WaitForStatus:    waitForStatus,
-	}
-
-	cookieUrl := c.GetString("cookieUrl")
-	if cookieUrl != "" {
-		athena.Cookie = &athenapdf.Cookie{
-			Url:   cookieUrl,
-			Name:  c.GetString("cookieName"),
-			Value: c.GetString("cookieValue"),
-		}
-	}
-
 StartConversion:
-	conversion = athena
+	conversion = ath
 	if attempts != 0 {
 		cc := cloudconvert.Client{
 			BaseURL: conf.CloudConvert.APIUrl,
 			APIKey:  conf.CloudConvert.APIKey,
 			Timeout: time.Second * time.Duration(conf.WorkerTimeout+5),
 		}
-		conversion = cloudconvert.CloudConvert{UploadConversion: uploadConversion, Client: cc}
+		conversion = cloudconvert.CloudConvert{UploadConversion: up, Client: cc}
 	}
 	work = converter.NewWork(wq, conversion, source)
 
@@ -154,6 +191,40 @@ StartConversion:
 	}
 }
 
+func convertByCookieHandler(c *gin.Context) {
+	//cmd = append(cmd, "-D", "10000", "-P", "A3", "-Z", "0.1")
+	s := c.MustGet("statsd").(*statsd.Client)
+	r, ravenOk := c.Get("sentry")
+
+	url := c.Query("url")
+	if url == "" {
+		c.AbortWithError(http.StatusBadRequest, ErrURLInvalid).SetType(gin.ErrorTypePublic)
+		s.Increment("invalid_url")
+		return
+	}
+
+	ext := c.Query("ext")
+
+	source, err := converter.NewConversionSource(url, nil, ext)
+	if err != nil {
+		s.Increment("conversion_error")
+		if ravenOk {
+			r.(*raven.Client).CaptureError(err, map[string]string{"url": url})
+		}
+		c.Error(err)
+		return
+	}
+
+	uploadConversion := CreateAwsUploader(c)
+	athena, err := CreateAthenaConversionFromCookie(c, uploadConversion)
+	if err != nil {
+		_ = c.AbortWithError(401, err)
+		return
+
+	}
+	conversionHandler(c, *source, athena, uploadConversion)
+}
+
 // convertByURLHandler is the main v1 API handler for converting a HTML to a PDF
 // via a GET request. It can either return a JSON string indicating that the
 // output of the conversion has been uploaded or it can return the output of
@@ -181,7 +252,21 @@ func convertByURLHandler(c *gin.Context) {
 		return
 	}
 
-	conversionHandler(c, *source)
+	uploadConversion := CreateAwsUploader(c)
+	athena := CreateAthenaConversion(c, uploadConversion)
+	conversionHandler(c, *source, athena, uploadConversion)
+}
+
+func CreateAwsUploader(c *gin.Context) converter.UploadConversion {
+	return converter.UploadConversion{Conversion: converter.Conversion{}, AWSS3: converter.AWSS3{
+		Region:       c.Query("aws_region"),
+		AccessKey:    c.Query("aws_id"),
+		AccessSecret: c.Query("aws_secret"),
+		S3Bucket:     c.Query("s3_bucket"),
+		S3Key:        c.Query("s3_key"),
+		S3Acl:        c.Query("s3_acl"),
+	}}
+
 }
 
 func convertByFileHandler(c *gin.Context) {
@@ -207,5 +292,7 @@ func convertByFileHandler(c *gin.Context) {
 		return
 	}
 
-	conversionHandler(c, *source)
+	uploadConversion := CreateAwsUploader(c)
+	athena := CreateAthenaConversion(c, uploadConversion)
+	conversionHandler(c, *source, athena, uploadConversion)
 }

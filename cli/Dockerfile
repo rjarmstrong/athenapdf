@@ -1,7 +1,11 @@
-FROM debian:8.7
+FROM debian:9.9
 MAINTAINER Arachnys <techteam@arachnys.com>
 
+#RUN echo 'deb http://deb.debian.org/debian  stretch main contrib non-free' >> /etc/apt/sources.list
+#RUN echo 'deb-src http://deb.debian.org/debian  stretch main contrib non-free' >> /etc/apt/sources.list
+
 RUN echo 'deb http://httpredir.debian.org/debian/ stable main contrib non-free' >> /etc/apt/sources.list
+RUN echo 'deb http://ftp.de.debian.org/debian stretch main' >> /etc/apt/sources.list
 
 RUN apt-get -yq update && \
     apt-get -yq install \
@@ -13,7 +17,7 @@ RUN apt-get -yq update && \
         libnotify4 \
         libnss3 \
         libxss1 \
-        libXtst6 \
+        libxtst6 \
         culmus \
         fonts-beng \
         fonts-dejavu \
@@ -30,7 +34,7 @@ RUN apt-get -yq update && \
         fonts-telu \
         fonts-thai-tlwg \
         ttf-liberation \
-        ttf-unfonts-core \
+#        ttf-unfonts-core \
         ttf-wqy-zenhei \
     && apt-get -yq autoremove \
     && apt-get -yq clean \

@@ -4,7 +4,7 @@
 
 ```bash
 # Set an alias in `~/.bashrc`
-alias htmltopdf="docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf "
+alias htmltopdf="docker run --rm -v $(pwd):/converted/ rjarmstrong/athenapdf athenapdf "
 
 # Reload
 source ~/.bashrc
@@ -18,5 +18,5 @@ htmltopdf http://blog.arachnys.com/
 
 ```bash
 # Redirect errors to /dev/null
-docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf 2> /dev/null http://blog.arachnys.com/
+docker run --rm -v $(pwd):/converted/ rjarmstrong/athenapdf athenapdf 2> /dev/null http://blog.arachnys.com/
 ```

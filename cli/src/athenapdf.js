@@ -187,34 +187,15 @@ app.on("ready", () => {
         ses = null;
     });
 
-    bw.loadURL(uriArg, loadOpts);
-
     ses = bw.webContents.session;
 
     if(athena.cookieName && athena.cookieValue && athena.cookieUrl) {
-        ses.cookies.set({url: athena.cookieUrl, name: athena.cookieName, value: athena.cookieValue}, function (error) {
+        ses.cookies.set({url: athena.cookieUrl, name: athena.cookieName, value: athena.cookieValue, expirationDate: Date.now()+(5*60*1000)}, function (error) {
             if (error) throw error;
+            bw.loadURL(uriArg, loadOpts)
         });
-    }
-
-    if (athena.bypass) {
-        const _cookieWhitelist = ["nytimes", "ft.com"];
-        const _inCookieWhitelist = (url) => {
-            let matches = _cookieWhitelist.filter((safe) => {
-                return url.indexOf(safe) !== -1;
-            });
-            return (matches.length !== 0);
-        };
-        ses.webRequest.onBeforeSendHeaders((details, callback) => {
-            if (details.resourceType === "mainFrame") {
-                if (!_inCookieWhitelist(details.url)) {
-                   delete details.requestHeaders["Cookie"];
-                }
-                details.requestHeaders["Referer"] = "https://www.google.com/";
-                details.requestHeaders["User-Agent"] = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
-            }
-            callback({cancel: false, requestHeaders: details.requestHeaders});
-        });
+    } else {
+        bw.loadURL(uriArg, loadOpts);
     }
 
     ses.on("will-download", (e, item, webContents) => {
@@ -243,6 +224,8 @@ app.on("ready", () => {
         app.exit(1);
     });
 
+    // TASK: everything below here is in danger of not running in sequence owing to loadURL being async
+
     // Load plugins
     let plugins = mediaPlugin + "\n";
     if (athena.aggressive) {
@@ -258,6 +241,7 @@ app.on("ready", () => {
         bw.webContents.printToPDF(pdfOpts, (err, data) => {
             if (err) console.error(err);
             _output(data);
+            bw.webContents.session.clearStorageData()
         });
     };
 

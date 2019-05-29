@@ -1,6 +1,6 @@
 # athenapdf
 
-[![](https://badge.imagelayers.io/arachnysdocker/athenapdf:latest.svg)](https://imagelayers.io/?images=arachnysdocker/athenapdf:latest 'Get your own badge on imagelayers.io')
+[![](https://badge.imagelayers.io/rjarmstrong/athenapdf:latest.svg)](https://imagelayers.io/?images=rjarmstrong/athenapdf:latest 'Get your own badge on imagelayers.io')
 
 **The CLI component of athenapdf.**
 

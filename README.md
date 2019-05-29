@@ -63,32 +63,32 @@ Before starting, ensure your [Docker][docker] environment is set up, and ready-t
 
 [![asciicast](https://asciinema.org/a/c1fbvtdnrctfq6baipfox00ct.png)](https://asciinema.org/a/c1fbvtdnrctfq6baipfox00ct)
 
-1. `docker pull arachnysdocker/athenapdf`
-2. `docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf <input_path> [output_path]`
+1. `docker pull rjarmstrong/athenapdf`
+2. `docker run --rm -v $(pwd):/converted/ rjarmstrong/athenapdf athenapdf <input_path> [output_path]`
 3. See [`cli`][cli] for full documentation
 
 The `[output_path]` can be omitted.
 
-Example: `docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf http://blog.arachnys.com/`
+Example: `docker run --rm -v $(pwd):/converted/ rjarmstrong/athenapdf athenapdf http://blog.arachnys.com/`
 
 **For Windows users**, an additional forward slash must precede the volume when using Git Bash / MinGW:
 
 ```bash
-docker run --rm -v /$(pwd):/converted/ arachnysdocker/athenapdf athenapdf http://blog.arachnys.com/
+docker run --rm -v /$(pwd):/converted/ rjarmstrong/athenapdf athenapdf http://blog.arachnys.com/
 ```
 
 Alternatively, if using the Windows command prompt:
 
 ```cmd
-docker run --rm -v %cd%:/converted/ arachnysdocker/athenapdf athenapdf http://blog.arachnys.com/
+docker run --rm -v %cd%:/converted/ rjarmstrong/athenapdf athenapdf http://blog.arachnys.com/
 ```
 
 #### Microservice
 
 [![asciicast](https://asciinema.org/a/41247.png)](https://asciinema.org/a/41247)
 
-1. `docker pull arachnysdocker/athenapdf-service`
-2. `docker run -p 8080:8080 --rm arachnysdocker/athenapdf-service`
+1. `docker pull rjarmstrong/athenapdf-service`
+2. `docker run -p 8080:8080 --rm rjarmstrong/athenapdf-service`
 3. Inline conversion: `http://<docker-address>:8080/convert?auth=arachnys-weaver&url=http://blog.arachnys.com/`
 4. OR cURL, and redirect output to file: `curl http://dockerhost:8080/convert\?auth\=arachnys-weaver\&url\=http://blog.arachnys.com/ |> out.pdf`
 5. See [`weaver`][weaver] for full documentation

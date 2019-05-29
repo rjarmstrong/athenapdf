@@ -2,6 +2,7 @@ package athenapdf
 
 import (
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/rjarmstrong/athenapdf/weaver/converter"
@@ -18,15 +19,22 @@ type AthenaPDF struct {
 	converter.UploadConversion
 	// CMD is the base athenapdf CLI command that will be executed.
 	// e.g. 'athenapdf -S -T 120'
-	CMD string
+	CMD        string
+	AthenaArgs Args
+}
+
+type Args struct {
+	PageSize *string
+	Delay    *int
+	Zoom     *int
+	// Cookie sets a cookie in the Electron Browser window to impersonate the calling user
+	*Cookie
 	// Aggressive will alter the athenapdf CLI conversion behaviour by passing
 	// an '-A' command-line flag to indicate aggressive content extraction
 	// (ideal for a clutter-free reading experience).
 	Aggressive bool
 	// WaitForStatus will wait until window.status === WINDOW_STATUS
 	WaitForStatus bool
-	// Cookie sets a cookie in the Electron Browser window to impersonate the calling user
-	Cookie *Cookie
 }
 
 type Cookie struct {
@@ -40,16 +48,25 @@ type Cookie struct {
 // string.
 // It will set an additional '-A' flag if aggressive is set to true.
 // See athenapdf CLI for more information regarding the aggressive mode.
-func constructCMD(base string, path string, aggressive bool, waitForStatus bool, cookie *Cookie) []string {
+func constructCMD(base string, path string, athArgs Args) []string {
 	args := strings.Fields(base)
-	if aggressive {
+	if athArgs.Aggressive {
 		args = append(args, "-A")
 	}
-	if waitForStatus {
+	if athArgs.WaitForStatus {
 		args = append(args, "--wait-for-status")
 	}
-	if cookie != nil {
-		args = append(args, "--cookieName", cookie.Name, "--cookieValue", cookie.Value, "--cookieUrl", cookie.Url)
+	if athArgs.Cookie != nil {
+		args = append(args, "--cookieName", athArgs.Cookie.Name, "--cookieValue", athArgs.Cookie.Value, "--cookieUrl", athArgs.Cookie.Url)
+	}
+	if athArgs.Zoom != nil {
+		args = append(args, "-Z", strconv.Itoa(*athArgs.Zoom))
+	}
+	if athArgs.Delay != nil {
+		args = append(args, "-D", strconv.Itoa(*athArgs.Delay))
+	}
+	if athArgs.PageSize != nil {
+		args = append(args, "-P", *athArgs.PageSize)
 	}
 	args = append(args, path)
 	return args
@@ -62,7 +79,10 @@ func (c AthenaPDF) Convert(s converter.ConversionSource, done <-chan struct{}) (
 	log.Printf("[AthenaPDF] converting to PDF: %s\n", s.GetActualURI())
 
 	// Construct the command to execute
-	cmd := constructCMD(c.CMD, s.URI, c.Aggressive, c.WaitForStatus, c.Cookie)
+	cmd := constructCMD(c.CMD, s.URI, c.AthenaArgs)
+
+	// TASK: dev env
+	// cmd[0] = "/Volumes/development/go/src/github.com/rjarmstrong/athenapdf/cli/bin/athenapdf"
 
 	log.Printf("[AthenaPDF] executing: %s\n", cmd)
 

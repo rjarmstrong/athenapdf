@@ -11,7 +11,7 @@ Simply pass a `-A` or `--aggressive` flag to render with [`dom-distiller`][domdi
 **Example:**
 
 ```bash
-docker run --rm -v $(pwd):/converted/ arachnysdocker/athenapdf athenapdf -A http://blog.arachnys.com/google-isnt-even-close-to-proper-due-diligence.-why-not
+docker run --rm -v $(pwd):/converted/ rjarmstrong/athenapdf athenapdf -A http://blog.arachnys.com/google-isnt-even-close-to-proper-due-diligence.-why-not
 ```
 
 

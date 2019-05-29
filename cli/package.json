@@ -17,7 +17,7 @@
   },
   "license": "MIT",
   "author": "Ian Lai <ian@arachnys.com>",
-  "main": "athenapdf.js",
+  "main": "src/athenapdf.js",
   "bin": "./bin/athenapdf",
   "repository": {
     "type": "git",
@@ -32,10 +32,10 @@
   },
   "dependencies": {
     "commander": "^2.9.0",
-    "electron": "3.0.5",
+    "electron": "^5.0.2",
     "rw": "^1.3.2"
   },
   "devDependencies": {
-    "electron-packager": "^7.0.4"
+    "electron-packager": "^13.1.1"
   }
 }

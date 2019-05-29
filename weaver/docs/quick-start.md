@@ -10,7 +10,7 @@ Before starting, ensure your Docker environment is [set up][docker], and ready-t
 It can be installed using:
 
 ```bash
-docker pull arachnysdocker/athenapdf-service
+docker pull rjarmstrong/athenapdf-service
 ```
 
 You can run the same command above to get updates.
@@ -24,7 +24,7 @@ Copy [`conf/sample.env`][sample] (from source), and modify it accordingly.
 
 ```bash
 # Docker Engine
-docker run -p 8080:8080 --rm arachnysdocker/athenapdf-service
+docker run -p 8080:8080 --rm rjarmstrong/athenapdf-service
 
 # Docker Compose
 # Uses `conf/sample.env` by default, change it in `docker-compose.yml`

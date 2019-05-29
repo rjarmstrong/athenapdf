@@ -1,5 +1,5 @@
 static:
-  image: arachnysdocker/athenapdf-service
+  image: rjarmstrong/athenapdf-service
   ports:
     - "8080:8080"
   env_file:
