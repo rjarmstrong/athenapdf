@@ -17,7 +17,7 @@
   },
   "license": "MIT",
   "author": "Ian Lai <ian@arachnys.com>",
-  "main": "src/athenapdf.js",
+  "main": "athenapdf.js",
   "bin": "./bin/athenapdf",
   "repository": {
     "type": "git",
@@ -27,15 +27,15 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -rf build/",
     "build:prepare": "mkdir -p build/ && cp -r src/ build/artifacts/ && cp package.json build/artifacts/ && cd build/artifacts/ && npm i --production",
-    "build:linux": "electron-packager build/artifacts/ athenapdf --platform=linux --arch=x64 --version=3.0.5 --out=build/ --overwrite --asar=true",
+    "build:linux": "electron-packager build/artifacts/ athenapdf --out build/ --overwrite",
     "build": "npm run clean && npm run build:prepare && npm run build:linux"
   },
   "dependencies": {
     "commander": "^2.9.0",
-    "electron": "^5.0.2",
     "rw": "^1.3.2"
   },
   "devDependencies": {
+    "electron": "^5.0.2",
     "electron-packager": "^13.1.1"
   }
 }

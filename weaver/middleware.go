@@ -12,10 +12,10 @@ import (
 
 var (
 	// ErrAuthorization should be returned when the authorization key is invalid.
-	ErrAuthorization = errors.New("invalid authorization key provided")
+	ErrAuthorization = errors.New("unauthorized")
 	// ErrInternalServer should be returned when a private error is returned
 	// from a handler.
-	ErrInternalServer = errors.New("PDF conversion failed due to an internal server error")
+	ErrInternalServer = errors.New("error")
 )
 
 // ConfigMiddleware sets the config in the context.
@@ -61,7 +61,7 @@ func ErrorMiddleware() gin.HandlerFunc {
 		if lastError != nil {
 			// Log all errors
 			log.Println("captured errors:")
-			log.Printf("%+v\n", c.Errors)
+			log.Printf("%+v\n", lastError)
 
 			// Public errors
 			if lastError.IsType(gin.ErrorTypePublic) {

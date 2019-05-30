@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/rjarmstrong/athenapdf/weaver/converter"
 	"github.com/rjarmstrong/athenapdf/weaver/gcmd"
 )
@@ -57,7 +58,7 @@ func constructCMD(base string, path string, athArgs Args) []string {
 		args = append(args, "--wait-for-status")
 	}
 	if athArgs.Cookie != nil {
-		args = append(args, "--cookieName", athArgs.Cookie.Name, "--cookieValue", athArgs.Cookie.Value, "--cookieUrl", athArgs.Cookie.Url)
+		args = append(args, "--cookie-name", athArgs.Cookie.Name, "--cookie-value", athArgs.Cookie.Value, "--cookie-url", athArgs.Cookie.Url)
 	}
 	if athArgs.Zoom != nil {
 		args = append(args, "-Z", strconv.Itoa(*athArgs.Zoom))
@@ -82,13 +83,13 @@ func (c AthenaPDF) Convert(s converter.ConversionSource, done <-chan struct{}) (
 	cmd := constructCMD(c.CMD, s.URI, c.AthenaArgs)
 
 	// TASK: dev env
-	// cmd[0] = "/Volumes/development/go/src/github.com/rjarmstrong/athenapdf/cli/bin/athenapdf"
+	//cmd[0] = "/Volumes/development/go/src/github.com/rjarmstrong/athenapdf/cli/bin/athenapdf"
 
 	log.Printf("[AthenaPDF] executing: %s\n", cmd)
 
 	out, err := gcmd.Execute(cmd, done)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithMessage(err, "error running athena pdf:")
 	}
 
 	return out, nil

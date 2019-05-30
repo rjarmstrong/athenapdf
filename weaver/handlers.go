@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"strconv"
@@ -71,7 +73,7 @@ func CreateAthenaConversion(c *gin.Context, uc converter.UploadConversion) *athe
 	return athena
 }
 
-func CreateAthenaConversionFromCookie(c *gin.Context, uc converter.UploadConversion) (*athenapdf.AthenaPDF, error) {
+func CreateAthenaConversionFromCookie(c *gin.Context, uri string, uc converter.UploadConversion) (*athenapdf.AthenaPDF, error) {
 
 	_, aggressive := c.GetQuery("aggressive")
 	_, waitForStatus := c.GetQuery("waitForStatus")
@@ -102,8 +104,13 @@ func CreateAthenaConversionFromCookie(c *gin.Context, uc converter.UploadConvers
 		return nil, ErrAuthorization
 	}
 
+	u, err := url.Parse(uri)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
 	athena.AthenaArgs.Cookie = &athenapdf.Cookie{
-		Url:   cook.Domain,
+		Url:   fmt.Sprintf("%s://%s", u.Scheme, u.Host),
 		Name:  cook.Name,
 		Value: cook.Value,
 	}
@@ -216,7 +223,7 @@ func convertByCookieHandler(c *gin.Context) {
 	}
 
 	uploadConversion := CreateAwsUploader(c)
-	athena, err := CreateAthenaConversionFromCookie(c, uploadConversion)
+	athena, err := CreateAthenaConversionFromCookie(c, url, uploadConversion)
 	if err != nil {
 		_ = c.AbortWithError(401, err)
 		return

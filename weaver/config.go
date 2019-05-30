@@ -66,7 +66,7 @@ type Config struct {
 	SentryDSN string
 }
 
-const AthenaBaseCommand = "athenapdf -S"
+const AthenaBaseCommand = "athenapdf --no-sandbox -S"
 
 // NewEnvConfig initialises configuration variables from the environment.
 func NewEnvConfig() Config {

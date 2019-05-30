@@ -1,11 +1,10 @@
-FROM debian:9.9
-MAINTAINER Arachnys <techteam@arachnys.com>
+FROM ubuntu:18.04
 
 #RUN echo 'deb http://deb.debian.org/debian  stretch main contrib non-free' >> /etc/apt/sources.list
 #RUN echo 'deb-src http://deb.debian.org/debian  stretch main contrib non-free' >> /etc/apt/sources.list
 
-RUN echo 'deb http://httpredir.debian.org/debian/ stable main contrib non-free' >> /etc/apt/sources.list
-RUN echo 'deb http://ftp.de.debian.org/debian stretch main' >> /etc/apt/sources.list
+#RUN echo 'deb http://httpredir.debian.org/debian/ stable main contrib non-free' >> /etc/apt/sources.list
+#RUN echo 'deb http://ftp.de.debian.org/debian stretch main' >> /etc/apt/sources.list
 
 RUN apt-get -yq update && \
     apt-get -yq install \
@@ -33,9 +32,9 @@ RUN apt-get -yq update && \
         fonts-sil-padauk \
         fonts-telu \
         fonts-thai-tlwg \
-        ttf-liberation \
+#        ttf-liberation \
 #        ttf-unfonts-core \
-        ttf-wqy-zenhei \
+#        ttf-wqy-zenhei \
     && apt-get -yq autoremove \
     && apt-get -yq clean \
     && rm -rf /var/lib/apt/lists/* \

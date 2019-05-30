@@ -28,7 +28,8 @@ const addHeader = (header, arr) => {
 }
 
 // chrome crashes in docker, more info: https://github.com/GoogleChrome/puppeteer/issues/1834
-app.commandLine.appendArgument("disable-dev-shm-usage");
+app.commandLine.appendArgument("--disable-dev-shm-usage")
+app.commandLine.appendArgument("--no-sandbox")
 
 athena
     .version("2.16.0")
@@ -115,6 +116,7 @@ app.commandLine.appendSwitch('ignore-gpu-blacklist', athena.ignoreGpuBlacklist |
 var bwOpts = {
     show: (athena.debug || false),
     webPreferences: {
+        sandbox: true,
         nodeIntegration: false,
         webSecurity: false,
         zoomFactor: (athena.zoom || 1)
